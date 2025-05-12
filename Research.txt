@@ -8,3 +8,20 @@ Blog describing the spring case: https://benmoseley.blog/my-research/so-what-is-
 example of the spring case: https://github.com/benmoseley/harmonic-oscillator-pinn/blob/main/Harmonic%20oscillator%20PINN.ipynb (from the blog)
 
 Failure modes, possible fixes if the training doesn't go well: https://arxiv.org/abs/2109.01050
+
+For the Poiseuille sim: Plane Poiseuille flow?
+Poiseuille flow in different cases: https://en.wikipedia.org/wiki/Hagen%E2%80%93Poiseuille_equation
+
+For the Karman sim: stationnary regime? Meaning low Reynolds Number?
+
+Navier-Stokes : Video explaining what they are https://www.youtube.com/watch?v=Ra7aQlenTb8
+
+Vector field divergeance : 3:00 in the vid
+
+we have to create the physical loss function from the Navier-Stokes equation, with conservation of mass 
+∇ • u = 0, 
+with u the velocity vector field and ∇ • the divergeance
+
+and conservation of momentum (Newton's second law rewritten)
+ρ (du/dt) = -∇p + μ ∇²u + F, 
+with ρ the density, p the pressure, μ the viscosity, u the velocity vector field and F other forces that might apply (usually gravity)
