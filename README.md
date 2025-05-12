@@ -11,3 +11,6 @@ With that, we want to evaluate PINNs for fluid simulation in this domain.
 
 Finally, we want to try to simulate more complex situations, either with 3D simulations or by adding obstacles to previous simulations.
 
+## 2D Steady State
+
+First step is to derive the PDEs from the Navier-Stokes equations
