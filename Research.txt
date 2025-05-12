@@ -1,0 +1,10 @@
+2019 paper: https://www.sciencedirect.com/science/article/pii/S0021999118307125?via%3Dihub
+
+Video on PINNs: https://www.youtube.com/watch?v=-zrY7P2dVC4
+
+From the video: simulation of a spring is easy, maybe implement that at first
+
+Blog describing the spring case: https://benmoseley.blog/my-research/so-what-is-a-physics-informed-neural-network/
+example of the spring case: https://github.com/benmoseley/harmonic-oscillator-pinn/blob/main/Harmonic%20oscillator%20PINN.ipynb (from the blog)
+
+Failure modes, possible fixes if the training doesn't go well: https://arxiv.org/abs/2109.01050
