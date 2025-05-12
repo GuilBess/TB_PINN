@@ -12,7 +12,7 @@ Failure modes, possible fixes if the training doesn't go well: https://arxiv.org
 For the Poiseuille sim: Plane Poiseuille flow?
 Poiseuille flow in different cases: https://en.wikipedia.org/wiki/Hagen%E2%80%93Poiseuille_equation
 
-For the Karman sim: stationnary regime? Meaning low Reynolds Number?
+For Karman: We just take a "screenshot" of a system at a certain time?
 
 Navier-Stokes : Video explaining what they are https://www.youtube.com/watch?v=Ra7aQlenTb8
 
@@ -24,7 +24,7 @@ with u the velocity vector field and ∇ • the divergeance
 
 and conservation of momentum (Newton's second law rewritten)
 ρ (du/dt) = -∇p + μ ∇²u + F, 
-with ρ the density, p the pressure, μ the viscosity, u the velocity vector field and F other forces that might apply (usually gravity)
+with ρ the density, p the pressure, μ the viscosity, u the velocity vector field and F other forces that might apply (usually gravity, do we ignore it?)
 
 Navier stokes PINN img from wikipedia https://en.wikipedia.org/wiki/Physics-informed_neural_networks
 
