@@ -29,3 +29,10 @@ with ρ the density, p the pressure, μ the viscosity, u the velocity vector fie
 Navier stokes PINN img from wikipedia https://en.wikipedia.org/wiki/Physics-informed_neural_networks
 
 We want to find the correct PDE for the different cases, the we can use pytorch's autograd function to compute the residual of the differential equation
+
+Nasa Navier-Stokes eq. for 3 dim: https://www.grc.nasa.gov/www/k-12/airplane/nseqs.html
+
+
+
+
+How do we choose which points do we take?
