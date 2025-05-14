@@ -13,3 +13,27 @@ We want to tell how the flow acts when "entering the pipe". We will just fix the
 
 ## Outlet boundary
 At the outlet, we want the flow to be fully developed, meaning the velocity gradient should be 0 => ∂u/∂x​=0, ∂v/∂x​=0
+
+# Simulation hyperparameters
+We need laminar flow to have a stable simulation. According to https://www.simscale.com/docs/simwiki/numerics-background/what-is-the-reynolds-number/, the flow should be laminar with a Reynolds number under 2300.
+
+We can find the Reynolds number with the formula: (ρ * u * ​h​)/μ. For a first simulation, I decided to go with water, an average speed of 0.01m/s and a height of the half channel of 1cm (0.02 m) which gives us:
+
+- ρ = 1000 [kg/m^3]
+- u = 0.01 [m/s]
+- h = 0.01 [m]
+- μ = 1 * 10^-3 [Pa * s]
+- Re = (1000 * 0.01 * 0.01) / (0.001) = 100
+
+The Reynolds number is way under 2300, we will have to see if it's a problem during tests
+
+In order to guarantee we are in a steady state, we have to guarantee a certain channel lenght, typically 10 * h, so 10cm in our case
+
+so we have:
+- ρ = 1000 [kg/m^3]
+- u = 0.01 [m/s]
+- h = 0.01 [m]
+- μ = 1 * 10^-3 [Pa * s]
+- L = 0.1
+
+![image](img\schema.png)
