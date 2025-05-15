@@ -1,1 +1,3 @@
 venv
+dist
+apptainer/app_test.sif

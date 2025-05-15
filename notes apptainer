@@ -1,0 +1,43 @@
+forme de container.def:
+
+        Bootstrap: docker
+        From: python:3.10-slim
+
+        %files
+            myscript.py /opt/myscript.py
+
+        %post
+            pip install numpy pandas  # replace with your actual dependencies
+
+        %environment
+            export PATH=/usr/local/bin:$PATH
+            export PYTHONUNBUFFERED=1
+
+        %runscript
+            exec python /opt/myscript.py "$@"
+
+build container:
+
+        sudo apptainer build mycontainer.sif container.def
+
+run apptainer w/ GPU access:
+
+        apptainer run --nv mycontainer.sif
+
+with sbatch:
+
+        (sbatch file (run_slurm.sh))
+        #!/bin/bash
+        #SBATCH --job-name=test_PINN # Job name
+        #SBATCH --output=output.txt # Standard output file
+        #SBATCH --error=error.txt # Standard error file
+        #SBATCH --tasks=1 # Number of tasks
+        #SBATCH --gpus-per-node=1 # Require GPUs
+        #SBATCH --time=0-01:00 # Maximum runtime (D-HH:MM)
+        #SBATCH --nodelist=calypso3 # Specific node [Optional]
+
+        apptainer run --nv app_test.sif
+
+to run it:
+
+        sbatch run_slurm.sh

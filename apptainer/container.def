@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: python:3.10-slim
+
+%files
+    ../test_script.py /opt/test_script.py
+
+%post
+    pip install numpy
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+%environment
+    export PATH=/usr/local/bin:$PATH
+    export PYTHONUNBUFFERED=1
+
+%runscript
+    exec python /opt/test_script.py "$@" 

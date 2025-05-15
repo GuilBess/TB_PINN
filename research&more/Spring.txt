@@ -1,6 +1,6 @@
 What I want to do:
 
 - have a classic physical model to compare to
-- sample a few datapoints from this model, evaluate data loss
+- sample a few datapoints from this model, evaluate data loss ()
 - sample a few more datapoints and evaluate the physical loss
 - add the losses, do backward prop
