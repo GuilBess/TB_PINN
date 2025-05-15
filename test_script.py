@@ -77,4 +77,4 @@ for i in range(150001):
         to_display = to_display.detach().numpy()
         last_res = to_display
 
-print(f"Done running... Time: {time.time - t_start}")
+print(f"Done running... Time: {time.time() - t_start}")

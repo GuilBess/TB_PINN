@@ -41,3 +41,9 @@ with sbatch:
 to run it:
 
         sbatch run_slurm.sh
+
+
+SSHFS stuff:
+
+        sshfs: sshfs guillaume.bessard@192.168.91.13:dist dist
+        to unmount: fusermount -u /home/gui/Documents/Bachelor/TB_PINN/dist
