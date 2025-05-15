@@ -5,6 +5,6 @@
 #SBATCH --tasks=1 # Number of tasks
 #SBATCH --gpus-per-node=1 # Require GPUs
 #SBATCH --time=0-01:00 # Maximum runtime (D-HH:MM)
-#SBATCH --nodelist=calypso3 # Specific node [Optional]
+#SBATCH --partition=Chacha
 
 apptainer run --nv app_test.sif
