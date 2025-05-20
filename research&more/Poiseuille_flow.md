@@ -37,3 +37,9 @@ so we have:
 - L = 0.1 [m]
 
 ![image](img\schema.png)
+
+## Tests
+Trouble learning the no-slip condition I think, will try to make it learn that over a bigger area maybe...
+Implemented scheduler to help with the learning and get out of local minimums. 
+Implemented new visualisations of the flow
+Also want to test while excluding points used for BC from the PDE loss!
