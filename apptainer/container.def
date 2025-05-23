@@ -2,11 +2,12 @@ Bootstrap: docker
 From: python:3.10-slim
 
 %files
-    ../test_script.py /opt/test_script.py
+    ../test_script.py /opt/test_script_2.py
 
 %post
     pip install numpy
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    pip install tqdm
 
 %environment
     export PATH=/usr/local/bin:$PATH

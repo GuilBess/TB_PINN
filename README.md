@@ -14,3 +14,7 @@ Finally, we want to try to simulate more complex situations, either with 3D simu
 ## 2D Steady State
 
 First step is to derive the PDEs from the Navier-Stokes equations
+
+write the stuff hehehehhhehehe
+
+We also need to compare our simulation to what the physics says. From wikipedia 
