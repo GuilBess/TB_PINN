@@ -4,10 +4,10 @@ import torch
 import torch.nn as nn
 import os
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 path = os.curdir
 print(path)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print(device)
 
@@ -174,5 +174,4 @@ for i in trange(10000):
     optimizer.step()
     scheduler.step()
 
-
-torch.save(poiseuille_model.state_dict(), path)
+torch.save(poiseuille_model.state_dict(), "test.pt")

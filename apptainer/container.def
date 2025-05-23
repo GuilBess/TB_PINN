@@ -2,7 +2,7 @@ Bootstrap: docker
 From: python:3.10-slim
 
 %files
-    ../test_script.py /opt/test_script_2.py
+    ./test_script_2.py /opt/test_script_2.py
 
 %post
     pip install numpy
@@ -14,4 +14,4 @@ From: python:3.10-slim
     export PYTHONUNBUFFERED=1
 
 %runscript
-    exec python /opt/test_script.py "$@" 
+    exec python /opt/test_script_2.py "$@" 
