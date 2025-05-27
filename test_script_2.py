@@ -134,7 +134,7 @@ interior_mask = ~(no_slip_mask | inlet_mask | outlet_mask)
 vals_phys = []
 vals_BC = []
 
-for i in trange(10000):
+for i in trange(50000):
     optimizer.zero_grad()
     
     # Boundray Conditions part
@@ -143,7 +143,7 @@ for i in trange(10000):
     p_outlet = yhp[outlet_mask, 2]
 
     outlet_loss = torch.mean(p_outlet**2) * 25
-    no_slip_loss = torch.mean(yhp[no_slip_mask, 0])**2 + torch.mean(yhp[no_slip_mask, 1]**2) * 20
+    no_slip_loss = torch.mean(yhp[no_slip_mask, 0])**2 + torch.mean(yhp[no_slip_mask, 1]**2) * 2000
     inlet_loss = torch.mean((yhp[inlet_mask, 0] - u_avg)**2) + torch.mean((yhp[inlet_mask, 1])**2) * 20
 
     #Physics loss part
@@ -167,7 +167,7 @@ for i in trange(10000):
     x_vals_tensor = tensor[:, 0]
     y_vals_tensor = tensor[:, 1]
 
-    if i%1000 == 0 or i == 9999:
+    if i%5000 == 0 or i == 9999:
         tqdm.write(f"Step {i+1}, Loss: {loss.item():.6f}\n Physics: {loss_phys.item():.6f}   No slip: {no_slip_loss.item():.6f}   Inlet: {inlet_loss.item():.6f}   Outlet: {outlet_loss.item():.6f}")
 
     loss.backward()
