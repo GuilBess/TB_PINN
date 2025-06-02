@@ -19,7 +19,7 @@ class Model(nn.Module):
     # defines a fully connected neural network, with a tanh activation function
     def __init__(self, inputs, outputs, hidden, n_layers):
         super().__init__()
-        act_f = nn.SiLU
+        act_f = nn.Tanh
 
         # First layer, "*" unpacks the list into arguments of nn.Sequential
         self.fcs = nn.Sequential(*[
@@ -117,8 +117,8 @@ L_factor = 2 # x dim simulation factor (x_max, x_min = L * L_factor, 0)
 torch.manual_seed(12)
 #model with 2 input (x,y position), 3 output layers (x, y velocity & pressure) and 8 hidden layers of 50 neurons
 poiseuille_model = Model(2, 3, 100, 5).to(device)
-optimizer = torch.optim.Adam(poiseuille_model.parameters(),lr=1e-4)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10000, gamma=0.5)
+optimizer = torch.optim.Adam(poiseuille_model.parameters(),lr=1e-3)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.5)
 
 tensor_np = generate_points(50000)
 
@@ -132,9 +132,9 @@ inlet_mask = (torch.abs(x_vals_tensor - 0) < 1e-2) & (~no_slip_mask)
 outlet_mask = (torch.abs(x_vals_tensor - L * L_factor) < 1e-2) & (~no_slip_mask)
 interior_mask = ~(no_slip_mask | inlet_mask | outlet_mask)
 
-losses = [[],[],[],[],[]]
+losses = {}
 
-for i in trange(20):
+for i in trange(10000):
     optimizer.zero_grad()
     
     # Boundray Conditions part
@@ -142,9 +142,9 @@ for i in trange(20):
 
     p_outlet = yhp[outlet_mask, 2]
 
-    outlet_loss = torch.mean(p_outlet**2) * 250
-    no_slip_loss = (torch.mean(yhp[no_slip_mask, 0]**2) + torch.mean(yhp[no_slip_mask, 1]**2)) * 200
-    inlet_loss = (torch.mean((yhp[inlet_mask, 0] - u_avg)**2) + torch.mean(yhp[inlet_mask, 1]**2)) * 200
+    outlet_loss = torch.mean(p_outlet**2) * 2500
+    no_slip_loss = (torch.mean(yhp[no_slip_mask, 0]**2) + torch.mean(yhp[no_slip_mask, 1]**2)) * 2000
+    inlet_loss = (torch.mean((yhp[inlet_mask, 0] - u_avg)**2) + torch.mean(yhp[inlet_mask, 1]**2)) * 2000
 
     #Physics loss part
     x_interior = tensor[interior_mask]
@@ -160,20 +160,27 @@ for i in trange(20):
 
     loss = loss_phys + no_slip_loss + inlet_loss + outlet_loss
 
-    losses[0].append(loss.item())
-    losses[1].append(loss_phys.item())
-    losses[2].append(no_slip_loss.item())
-    losses[3].append(inlet_loss.item())
-    losses[4].append(outlet_loss.item())
+    losses["tot"].append(loss.item())
+    losses["phys"].append(loss_phys.item())
+    losses["no_slip"].append(no_slip_loss.item())
+    losses["inlet"].append(inlet_loss.item())
+    losses["outlet"].append(outlet_loss.item())
 
-    tensor_np = generate_points(50000)
-
-    tensor = torch.from_numpy(tensor_np).float().to(device).requires_grad_(True)
+    if i > 2000:
+        tensor_np = generate_points(50000)
+        tensor = torch.from_numpy(tensor_np).float().to(device).requires_grad_(True)
 
     x_vals_tensor = tensor[:, 0]
     y_vals_tensor = tensor[:, 1]
 
     if i%2000 == 0 or i == 9999:
+        total_norm = 0
+        for p in poiseuille_model.parameters():
+            if p.grad is not None:
+                param_norm = p.grad.data.norm(2)
+                total_norm += param_norm.item() ** 2
+        total_norm = total_norm ** 0.5
+        print("Gradient norm:", total_norm)
         tqdm.write(f"Step {i+1}, Loss: {loss.item():.6f}\n Physics: {loss_phys.item():.6f}   No slip: {no_slip_loss.item():.6f}   Inlet: {inlet_loss.item():.6f}   Outlet: {outlet_loss.item():.6f}")
 
     loss.backward()
@@ -181,9 +188,10 @@ for i in trange(20):
     scheduler.step()
 
 
-for idx, i in enumerate(losses):
-    plt.plot(i)
-    plt.savefig(f"loss_{idx}.png")
+for i in losses.keys:
+    plt.plot(losses[i])
+    plt.title(f"Loss {i}")
+    plt.savefig(f"{i}.png")
     plt.clf()
 
 torch.save(poiseuille_model.state_dict(), "test.pt")
