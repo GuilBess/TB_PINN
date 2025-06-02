@@ -23,7 +23,7 @@ We can find the Reynolds number with the formula: (ρ * u * 2​h​)/μ. For a 
 - u = 0.01 [m/s]
 - h = 0.01 [m]
 - μ = 1 * 10^-3 [Pa * s]
-- Re = (1000 * 0.01 * 0.02) / (0.001) = 200
+- Re = (ρ * u * 2h) / μ = (1000 * 0.01 * 0.02) / (0.001) = 200
 
 The Reynolds number is way under 2300, we will have to see if it's a problem during tests
 
@@ -42,4 +42,13 @@ so we have:
 Trouble learning the no-slip condition I think, will try to make it learn that over a bigger area maybe...
 Implemented scheduler to help with the learning and get out of local minimums. 
 Implemented new visualisations of the flow
-Also want to test while excluding points used for BC from the PDE loss!
+Also want to test while excluding points used for BC from the PDE loss! (done, works better)
+
+## Analysis
+from wikipedia: https://fr.wikipedia.org/wiki/%C3%89coulement_de_Poiseuille
+
+u(y) = u_max((4y/h)-(4y²/h²))
+
+with u_max = (3/2) * u_avg from https://www.cdeep.iitb.ac.in/slides/A15/CE223/CE223-L24.PDF
+
+alltogether: u(y) = (3/2) * u * ((4y/h)-(4y²/h²))

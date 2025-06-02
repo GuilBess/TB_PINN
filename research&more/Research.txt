@@ -32,7 +32,10 @@ We want to find the correct PDE for the different cases, the we can use pytorch'
 
 Nasa Navier-Stokes eq. for 3 dim: https://www.grc.nasa.gov/www/k-12/airplane/nseqs.html
 
+Poiseuille plane flow speed profile: 
 
+from wikipedia: https://fr.wikipedia.org/wiki/%C3%89coulement_de_Poiseuille
 
+u(y) = u_max((4y/))
 
-How do we choose which points do we take?
+with u_max = (3/2) * u_avg from https://www.cdeep.iitb.ac.in/slides/A15/CE223/CE223-L24.PDF

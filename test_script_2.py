@@ -118,9 +118,9 @@ torch.manual_seed(12)
 #model with 2 input (x,y position), 3 output layers (x, y velocity & pressure) and 8 hidden layers of 50 neurons
 poiseuille_model = Model(2, 3, 100, 5).to(device)
 optimizer = torch.optim.Adam(poiseuille_model.parameters(),lr=1e-3)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.5)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.1, patience=50)
 
-tensor_np = generate_points(50000)
+tensor_np = generate_points(10000)
 
 tensor = torch.from_numpy(tensor_np).float().to(device).requires_grad_(True)
 
@@ -167,13 +167,13 @@ for i in trange(10000):
     losses["outlet"].append(outlet_loss.item())
 
     if i > 2000:
-        tensor_np = generate_points(50000)
+        tensor_np = generate_points(10000)
         tensor = torch.from_numpy(tensor_np).float().to(device).requires_grad_(True)
 
     x_vals_tensor = tensor[:, 0]
     y_vals_tensor = tensor[:, 1]
 
-    if i%2000 == 0 or i == 9999:
+    if i%2000 == 0 or i == 19999:
         total_norm = 0
         for p in poiseuille_model.parameters():
             if p.grad is not None:
