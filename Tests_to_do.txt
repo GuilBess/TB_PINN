@@ -2,12 +2,64 @@ Different things to try to train the model:
 
 - Size of the NN: test with 100x10, 200x10
 - Test SiLU/Tanh act func
-- Number of input points: test with 10'000, 50'000
+- Number of input points: test between 10'000, 50'000
 - Create new random input points or keep the same points
 - BC only learning phase: test with training the model only on the BC at first for a few epochs
 - Train the model for longer, reducing the LR as it goes (50'000 epoch, 100'000 epochs, 200'000 epochs)
 - Modify zone weights (more points on BC or equally distributed points)
 - Bigger "walls" zones
+- Add regularization (dropout etc...)
 
-First test: 200x10 NN Tanh act func, 10'000 input points, no new input points created, BC only for 20'000 epochs, 50'000 total epochs
-reducing LR by factor 0.1 after 25'000 epochs, with higher points density in the walls and 0.01 walls thickness
+--------------------------------------------------------
+Test1: 200x10 NN Tanh act func, 10'000 input points, no new input points created, BC only for 20'000 epochs, 50'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 25'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
+
+Result: As seen in the output file and loss graphs, at some point the loss gets "stuck" and starts hovering in the same place, specifically
+for the BCs' losses. We can also see in the output file that 20'000 epochs for only the BCs loss is not necessary, we will stop at 5'000.
+We also see that the speeds kind of "averaged", and the pressure is constant along the whole domain, which is probably caused by the BCs 
+not being learned correctly. The learning may aslo be influenced by the randomly generated points, as during testing sometimes we get out 
+of the "averaged" situation. We might want to find a way to stop the learning based on the losses value instead of doing a certain number
+of epochs in the future
+
+--------------------------------------------------------
+Test2: 200x10 NN Tanh act func, 10'000 input points, no new input points created, BC only for 5'000 epochs, 50'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 25'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
+
+Result: We are now out of the "averaged" situation. We see that around 41'000 epochs, a new gradient is found which allows the loss to 
+become a bit smaller, but then it hovers again around new values, in the same way as before. We may need to explore a bit more broadly,
+maybe we are reducting the LR too much. For the next test, we will try running for more epochs and not lowering the LR for longer.
+
+--------------------------------------------------------
+Test3: 200x10 NN Tanh act func, 10'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
+reducing LR from 1e-3 to 5e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
+
+Result: We don't really see any improvement over longuer trainings. Maybe the NN is too big and training is taking very long to give 
+meaninful results. Or maybe we don't have enough points in the domain. Next test should be with a smaller NN and then we will try with
+more points.
+
+--------------------------------------------------------
+Test4: 100x10 NN Tanh act func, 10'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
+
+Results: We might have to make the displayed loss graphs more readable... Otherwise this seems way better than the previous tests, 
+with better losses on the BCs and physics that is better respected. We have to test different things to make the training better, and 
+I want to start trying again with more points
+
+--------------------------------------------------------
+Test5: 100x10 NN Tanh act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
+
+Results: A bit better than Test4, the loss displaying is a bit better too, maybe we could do an average too to make it more readable. 
+Now that we have something that looks more or less correct, I want to try using SiLU act func to compare, and then we should try 
+different things,
+- Different densities on domain (add back "center" density)
+- More points
+- More epochs
+- Regularization
+We also notice very well the point where we go from 1e-3 to 1e-4 LR value, at 75'000 epoch
+
+--------------------------------------------------------
+Test6: 100x10 NN SiLU act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
+
+Results: Went from ~65 to ~45 epochs/sec, SiLU is more expensive to compute
