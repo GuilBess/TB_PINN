@@ -62,4 +62,8 @@ We also notice very well the point where we go from 1e-3 to 1e-4 LR value, at 75
 Test6: 100x10 NN SiLU act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
 reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
 
-Results: Went from ~65 to ~45 epochs/sec, SiLU is more expensive to compute
+Results: Went from ~65 to ~45 epochs/sec, SiLU is more expensive to compute. Results were worse, back in the "averaged" situation. 
+
+--------------------------------------------------------
+Test6: 100x10 NN Tanh act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
