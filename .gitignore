@@ -1,4 +1,5 @@
 venv
 dist
+dist_c
 apptainer/app_test.sif
 losses

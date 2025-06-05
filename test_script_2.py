@@ -115,10 +115,10 @@ h_factor = 2 # y dim simulation factor (y_max, y_min = +-h * h_factor)
 L_factor = 2 # x dim simulation factor (x_max, x_min = L * L_factor, 0)
 
 torch.manual_seed(12)
-#model with 2 input (x,y position), 3 output layers (x, y velocity & pressure) and 8 hidden layers of 50 neurons
-poiseuille_model = Model(2, 3, 100, 5).to(device)
+#model with 2 input (x,y position), 3 output layers (x, y velocity & pressure) and 10 hidden layers of 200 neurons
+poiseuille_model = Model(2, 3, 200, 10).to(device)
 optimizer = torch.optim.Adam(poiseuille_model.parameters(),lr=1e-3)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.1, patience=50)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=7500, gamma=0.5)
 
 tensor_np = generate_points(10000)
 
@@ -133,8 +133,13 @@ outlet_mask = (torch.abs(x_vals_tensor - L * L_factor) < 1e-2) & (~no_slip_mask)
 interior_mask = ~(no_slip_mask | inlet_mask | outlet_mask)
 
 losses = {}
+losses["tot"] = []
+losses["phys"] = []
+losses["no_slip"] = []
+losses["inlet"] = []
+losses["outlet"] = []
 
-for i in trange(10000):
+for i in trange(75000):
     optimizer.zero_grad()
     
     # Boundray Conditions part
@@ -158,37 +163,36 @@ for i in trange(10000):
 
     loss_phys = (torch.mean(navier_x**2) + torch.mean(navier_y**2) + torch.mean(continuity**2) * 1000)
 
-    loss = loss_phys + no_slip_loss + inlet_loss + outlet_loss
+    if i < 10000:
+        loss = no_slip_loss + inlet_loss + outlet_loss 
+    else:
+        loss = loss_phys + no_slip_loss + inlet_loss + outlet_loss
 
-    losses["tot"].append(loss.item())
-    losses["phys"].append(loss_phys.item())
-    losses["no_slip"].append(no_slip_loss.item())
-    losses["inlet"].append(inlet_loss.item())
-    losses["outlet"].append(outlet_loss.item())
+    if i == 10000: print("Switching from BC loss only to complete loss")
 
-    if i > 2000:
-        tensor_np = generate_points(10000)
-        tensor = torch.from_numpy(tensor_np).float().to(device).requires_grad_(True)
+    if i > 5000 and i%1000 == 0:
+        losses["tot"].append(loss.item())
+        losses["phys"].append(loss_phys.item())
+        losses["no_slip"].append(no_slip_loss.item())
+        losses["inlet"].append(inlet_loss.item())
+        losses["outlet"].append(outlet_loss.item())
+
+    
+    '''tensor_np = generate_points(10000)
+    tensor = torch.from_numpy(tensor_np).float().to(device).requires_grad_(True)'''
 
     x_vals_tensor = tensor[:, 0]
     y_vals_tensor = tensor[:, 1]
-
-    if i%2000 == 0 or i == 19999:
-        total_norm = 0
-        for p in poiseuille_model.parameters():
-            if p.grad is not None:
-                param_norm = p.grad.data.norm(2)
-                total_norm += param_norm.item() ** 2
-        total_norm = total_norm ** 0.5
-        print("Gradient norm:", total_norm)
-        tqdm.write(f"Step {i+1}, Loss: {loss.item():.6f}\n Physics: {loss_phys.item():.6f}   No slip: {no_slip_loss.item():.6f}   Inlet: {inlet_loss.item():.6f}   Outlet: {outlet_loss.item():.6f}")
 
     loss.backward()
     optimizer.step()
     scheduler.step()
 
+    if i%5000 == 0 or i == 74999:
+        tqdm.write(f"Step {i+1}, Loss: {loss.item():.6f}\n Physics: {loss_phys.item():.6f}   No slip: {no_slip_loss.item():.6f}   Inlet: {inlet_loss.item():.6f}   Outlet: {outlet_loss.item():.6f}")
 
-for i in losses.keys:
+
+for i in losses.keys():
     plt.plot(losses[i])
     plt.title(f"Loss {i}")
     plt.savefig(f"{i}.png")

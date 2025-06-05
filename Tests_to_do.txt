@@ -1,0 +1,13 @@
+Different things to try to train the model:
+
+- Size of the NN: test with 100x10, 200x10
+- Test SiLU/Tanh act func
+- Number of input points: test with 10'000, 50'000
+- Create new random input points or keep the same points
+- BC only learning phase: test with training the model only on the BC at first for a few epochs
+- Train the model for longer, reducing the LR as it goes (50'000 epoch, 100'000 epochs, 200'000 epochs)
+- Modify zone weights (more points on BC or equally distributed points)
+- Bigger "walls" zones
+
+First test: 200x10 NN Tanh act func, 10'000 input points, no new input points created, BC only for 20'000 epochs, 50'000 total epochs
+reducing LR by factor 0.1 after 25'000 epochs, with higher points density in the walls and 0.01 walls thickness
