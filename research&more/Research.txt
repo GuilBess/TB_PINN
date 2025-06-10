@@ -36,6 +36,7 @@ Poiseuille plane flow speed profile:
 
 from wikipedia: https://fr.wikipedia.org/wiki/%C3%89coulement_de_Poiseuille
 
-u(y) = u_max((4y/))
+u(y) = u_max(1-(y²/h²))
 
-with u_max = (3/2) * u_avg from https://www.cdeep.iitb.ac.in/slides/A15/CE223/CE223-L24.PDF
+Optimizer research: https://arxiv.org/pdf/2501.16371
+It appears that this paper uses an ADAM optimizer first and then a BFGS optimizer to fine tune the model

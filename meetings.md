@@ -27,3 +27,9 @@ After the meeting a few points have been talked about:
 - We need to display the Loss in a meaningful way
 - We need to fix the learning, as it appears that the loss stays the same after a time
 - Still have to solve the analytical version for the poiseuille flow in order to have a baseline to compare to
+
+
+# Meeting 06.06
+(Evolution can be seen in Test1 to Test10)
+
+optimizer, fixer la pression, changer l'initialisation, faire des plus petits batch, tester plus de profondeur dans le NN, poids des loss, calculer l'erreur (loss) localement et grapher

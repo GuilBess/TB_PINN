@@ -9,6 +9,7 @@ Different things to try to train the model:
 - Modify zone weights (more points on BC or equally distributed points)
 - Bigger "walls" zones
 - Add regularization (dropout etc...)
+- Modify simulation parameters?
 
 --------------------------------------------------------
 Test1: 200x10 NN Tanh act func, 10'000 input points, no new input points created, BC only for 20'000 epochs, 50'000 total epochs
@@ -63,7 +64,53 @@ Test6: 100x10 NN SiLU act func, 20'000 input points, no new input points created
 reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
 
 Results: Went from ~65 to ~45 epochs/sec, SiLU is more expensive to compute. Results were worse, back in the "averaged" situation. 
+Maybe the parameters used in this test are better suited to the Tanh act func, and SiLU might work if I change the parameters a bit,
+but right now I think it's better to try and improve with the Tanh act func. Next test we will try again with Tanh, and increase 
+density in the center of the simulation to see if it can improve the results.
 
 --------------------------------------------------------
-Test6: 100x10 NN Tanh act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
-reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls and 0.01 walls thickness, no regularization
+Test7: 100x10 NN Tanh act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 75'000 epochs, with higher points density in the walls, higher density in the center of the 
+simulation and 0.01 walls thickness, no regularization
+
+Results: Although the loss was lower in this case, the results weren't as good when comparing to the theorical poiseuille. The loss 
+also looked like it was still getting smaller, and it seems like we could reduce the LR earlier and one more time in the next test.
+This will be done with the higher density in the middle first, then in the base case from before
+
+--------------------------------------------------------
+Test8: 100x10 NN Tanh act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 150'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 50'000 epochs and from 1e-4 to 1e-5 after 100'000, with higher points density in the walls, 
+higher density in the center of the simulation and 0.01 walls thickness, no regularization
+
+Results: The higher density middle part seems to be detrimental to the simulation, as this one looks similar to the previous test.
+The results are worse but the loss is lower, This might be due to the fact that the speeds in the second half of the domain is 
+nearly 0, which validates the physics loss function, and the error would be only on the "transition" between speed and no speed.
+The when we compute the loss, the average would be small. Not sure if this is due to the higher density middle, will try without it.
+Then we can also try with even more points in a next test.
+
+--------------------------------------------------------
+Test9: 100x10 NN Tanh act func, 20'000 input points, no new input points created, BC only for 5'000 epochs, 150'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 50'000 epochs and from 1e-4 to 1e-5 after 100'000, with higher points density in the walls and
+0.01 walls thickness, no regularization
+
+Results: We have the same problem as the two previous tests. At some number of epochs, maybe due to too much training, the results
+get worse even though the loss seems to do well. I want to go back to 100k epochs and 1e-3 to 1e-4 LR and increase the number of 
+points to see if this would be better.
+
+--------------------------------------------------------
+Test10: 100x10 NN Tanh act func, 50'000 input points, no new input points created, BC only for 5'000 epochs, 100'000 total epochs
+reducing LR from 1e-3 to 1e-4 after 50'000 epochs with higher points density in the walls and 0.01 walls thickness, no regularization
+
+Result: We still have problems with the speed tending to 0 when x gets bigger. This might be because that we have more points in the 
+walls (no_slip zone) than in the actual simulated flow (~2x more points). In the next test, I'll try to make the density even on the 
+whole domain.
+
+--------------------------------------------------------
+Test11: 1After the meeting, few new things to try. We noticed that 1e-3 LR was probably too big, and we also decided to randomize the
+model weights initialisation. We also reduced the weights on the BCs losses. 100x10 NN Tanh act func, 50'000 input points, no new input
+ points created, BC only for 5'000 epochs, 100'000 total epochs reducing LR from 1e-4 to 1e-5 after 50'000 epochs with higher points 
+density in the walls and 0.01 walls thickness, no regularization
+
+Result: We can see improvement in the pressure gradient, which is not reversed anymore, but the flow is worse than before. This may be 
+due to the weights. We also see that we might be lowering the LR too fast. Next test will be with a new optimizer, using a LBFGS after 
+50'000 iterations
