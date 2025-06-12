@@ -106,11 +106,35 @@ walls (no_slip zone) than in the actual simulated flow (~2x more points). In the
 whole domain.
 
 --------------------------------------------------------
-Test11: 1After the meeting, few new things to try. We noticed that 1e-3 LR was probably too big, and we also decided to randomize the
+Test11: After the meeting, few new things to try. We noticed that 1e-3 LR was probably too big, and we also decided to randomize the
 model weights initialisation. We also reduced the weights on the BCs losses. 100x10 NN Tanh act func, 50'000 input points, no new input
- points created, BC only for 5'000 epochs, 100'000 total epochs reducing LR from 1e-4 to 1e-5 after 50'000 epochs with higher points 
+points created, BC only for 5'000 epochs, 100'000 total epochs reducing LR from 1e-4 to 1e-5 after 50'000 epochs with higher points 
 density in the walls and 0.01 walls thickness, no regularization
 
 Result: We can see improvement in the pressure gradient, which is not reversed anymore, but the flow is worse than before. This may be 
-due to the weights. We also see that we might be lowering the LR too fast. Next test will be with a new optimizer, using a LBFGS after 
-50'000 iterations
+due to the weights. We also see that we might be lowering the LR too fast. Next test will be with batches, generating 50'000 points in
+batches of 5000, generating new input points every epoch
+
+--------------------------------------------------------
+Test12: 100x10 NN Tanh act func, 50'000 input points in batches of 5000, new inputs every epoch, BC only for 5'000 epochs, 75'000 total
+epochs fixed LR at 1e-4, higher points density in the walls and 0.01 walls thickness, no regularization
+
+Result: We don't really see a big difference compared to the previous test. It also takes way longer to run the script with batches. I 
+want to try and use a LBFGS in the next test.
+
+--------------------------------------------------------
+Test13: 100x10 NN Tanh act func, 50'000 input points, new inputs every epoch,  75'000 total epochs moving LR from 1e-4, dividing it by 
+5 every 20'000 epoch, higher points density in the walls and 0.01 walls thickness, no regularization.
+
+Results: The results were once again similar, reducing the LR seems effective. I also noticed that the outlet BC fixed the pressure at 0
+Which is a problem because we also fixed the inlet pressure. Modified the outlet so that the BC is on the pressure gradient in y instead
+
+--------------------------------------------------------
+Test14: Changing test method a bit, now I will set a goal to the new test and explain the modifications I did and why, as well as stating
+what we expect from the results and if we got what we expected. Here is the starting point: 100x10 NN Tanh act func, 50'000 input points,
+new inputs every epoch, 150'000 total epochs moving LR from 1e-4, dividing it by 5 every 30'000 epoch, higher points density in the walls
+and 0.01 walls thickness, no regularization.
+What we changed: The outlet BC is now on the dpdy gradient at the outlet, changed from fixed outlet pressure. We expect the pressure 
+gradient across x to be continuous now, and the physics to be better respected. This can be found in commit 
+
+Results: 

@@ -33,3 +33,11 @@ After the meeting a few points have been talked about:
 (Evolution can be seen in Test1 to Test10)
 
 optimizer, fixer la pression, changer l'initialisation, faire des plus petits batch, tester plus de profondeur dans le NN, poids des loss, calculer l'erreur (loss) localement et grapher
+
+# Meeting 12.06
+To talk about: May have a problem in the outlet BCs
+plot losses on different graphs
+
+test methode scientifique -> faire un test avec raison précise et attente, pas que des tests au hasard
+changer pression fixée in et out BC
+changer architecture

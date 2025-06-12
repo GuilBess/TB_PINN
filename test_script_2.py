@@ -79,13 +79,23 @@ def compute_PDE(xy, y_in):
     d2vdy2 = grads(dvdy, xy)[:, 1]
     return dudx, dudy, dpdx, dpdy, d2udx2, d2udy2, dvdx, dvdy, d2vdx2, d2vdy2
 
+def compute_DPDY(xy, y_in):
+    u = y_in[:, 0:1]
+    v = y_in[:, 1:2]
+    p = y_in[:, 2:3]
+    grads = lambda out, inp: torch.autograd.grad(out, inp, grad_outputs=torch.ones_like(out), create_graph=True)[0]
+    grads_p = grads(p, xy)
+    dpdx, dpdy = grads_p[:, 0], grads_p[:, 1]
+    return dpdy
+
 # Loss function
 def compute_loss(model, inputs, masks, i):
     yhp = model(inputs)
     no_slip_mask, inlet_mask, outlet_mask, interior_mask = masks
+    
+    dpdy_outlet_BC = compute_DPDY(inputs, yhp)
+    outlet_loss = torch.mean(dpdy_outlet_BC**2) * 250
 
-    p_outlet = yhp[outlet_mask, 2]
-    outlet_loss = torch.mean(p_outlet**2) * 250
     no_slip_loss = (torch.mean(yhp[no_slip_mask, 0]**2) + torch.mean(yhp[no_slip_mask, 1]**2)) * 200
     inlet_loss = (torch.mean((yhp[inlet_mask, 0] - u_avg)**2) +
                   torch.mean(yhp[inlet_mask, 1]**2) +
@@ -116,40 +126,34 @@ torch.manual_seed(rng)
 # Model initialization
 poiseuille_model = Model(2, 3, 100, 10).to(device)
 optimizer_a = torch.optim.Adam(poiseuille_model.parameters(), lr=1e-4)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer_a, 30000, 0.2)
 
 # Logging
 losses = {key: [] for key in ["tot", "phys", "no_slip", "inlet", "outlet"]}
 
-batch_size = 5000
 total_points = 50000
-num_batches = total_points // batch_size
 
 # Training loop
-for i in trange(75000):
+for i in trange(150000):
     full_tensor_np = generate_points(total_points)
-    full_tensor = torch.from_numpy(full_tensor_np).float().to(device)
-    
-    # Optional: Shuffle
-    perm = torch.randperm(total_points)
-    full_tensor = full_tensor[perm-1]
+    full_tensor = torch.from_numpy(full_tensor_np).float().to(device).requires_grad_()
 
     optimizer_a.zero_grad()
 
-    for b in range(num_batches):
-        batch = full_tensor[b*batch_size:(b+1)*batch_size].clone().detach().requires_grad_(True)
-        x_vals_tensor = batch[:, 0]
-        y_vals_tensor = batch[:, 1]
+    x_vals_tensor = full_tensor[:, 0]
+    y_vals_tensor = full_tensor[:, 1]
 
-        no_slip_mask = (y_vals_tensor < -h) | (y_vals_tensor > h)
-        inlet_mask = (torch.abs(x_vals_tensor - 0) < 1e-2) & (~no_slip_mask)
-        outlet_mask = (torch.abs(x_vals_tensor - L * 2) < 1e-2) & (~no_slip_mask)
-        interior_mask = ~(no_slip_mask | inlet_mask | outlet_mask)
-        masks = (no_slip_mask, inlet_mask, outlet_mask, interior_mask)
-        
-        loss, loss_phys, no_slip_loss, inlet_loss, outlet_loss = compute_loss(poiseuille_model, batch, masks, i)
-        loss.backward()
+    no_slip_mask = (y_vals_tensor < -h) | (y_vals_tensor > h)
+    inlet_mask = (torch.abs(x_vals_tensor - 0) < 1e-2) & (~no_slip_mask)
+    outlet_mask = ((L * 2 - x_vals_tensor) < 1e-2) & (~no_slip_mask)
+    interior_mask = ~(no_slip_mask | inlet_mask | outlet_mask)
+    masks = (no_slip_mask, inlet_mask, outlet_mask, interior_mask)
     
+    loss, loss_phys, no_slip_loss, inlet_loss, outlet_loss = compute_loss(poiseuille_model, full_tensor, masks, i)
+
+    loss.backward()
     optimizer_a.step()
+    scheduler.step()
 
 
     if i > 30000:
