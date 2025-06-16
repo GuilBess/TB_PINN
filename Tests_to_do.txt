@@ -135,6 +135,13 @@ what we expect from the results and if we got what we expected. Here is the star
 new inputs every epoch, 150'000 total epochs moving LR from 1e-4, dividing it by 5 every 30'000 epoch, higher points density in the walls
 and 0.01 walls thickness, no regularization.
 What we changed: The outlet BC is now on the dpdy gradient at the outlet, changed from fixed outlet pressure. We expect the pressure 
-gradient across x to be continuous now, and the physics to be better respected. This can be found in commit 
+gradient across x to be continuous now, and the physics to be better respected. This can be found in commit (dcbd627)
 
 Results: 
+The pressure gradient is once again reversed, and the no-slip loss is not respected. There is no more weird flow "going backward". Maybe 
+the net is not deep enough for this. Also, 150'000 epoch is bigger than necessary, so I'll reduce it to 75'000 again.
+
+--------------------------------------------------------
+Test15: I feel like the model has difficulties to solve every BC and the physical loss at the same time. My though is that the net isn't 
+big enough, so I'll try making it deeper. We want to see a clearer separation between BCs and physical losses, and we want the pressure
+to go in the right direction. Expecting better results in these area.
