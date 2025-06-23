@@ -29,7 +29,7 @@ class Model(nn.Module):
         for _ in range(n_layers - 1):
             layers.append(nn.Linear(hidden, hidden))
             layers.append(nn.Tanh())
-            layers.append(nn.Dropout(0.1))
+            #layers.append(nn.Dropout(0.0))
         
         # Output layer
         layers.append(nn.Linear(hidden, outputs))
@@ -97,9 +97,9 @@ def compute_PDE_full(xy, y_pred):
     # Gradient function
     grads = lambda out, inp: torch.autograd.grad(
         out, inp, 
-        grad_outputs=torch.ones_like(out), 
-        create_graph=True,
+        grad_outputs=torch.ones_like(out),
         retain_graph=True,
+        create_graph=True,
         only_inputs=True
     )[0]
     
@@ -130,49 +130,55 @@ def compute_loss(model, inputs, masks, i):
     
     # Boundary condition losses (no spatial derivatives needed)
     no_slip_loss = (torch.mean(yhp[no_slip_mask, 0]**2) + 
-                   torch.mean(yhp[no_slip_mask, 1]**2)) * 500
+                   torch.mean(yhp[no_slip_mask, 1]**2)) * 20
     
     inlet_loss = (torch.mean((yhp[inlet_mask, 0] - u_avg)**2) +
-                  torch.mean(yhp[inlet_mask, 1]**2)) * 200
+                  torch.mean(yhp[inlet_mask, 1]**2)) * 20
     
-    # Outlet pressure gradient - use precomputed gradients
-    if outlet_mask.sum() > 0:
-        dpdy_outlet = dpdy[outlet_mask, 0]  # dpdy was computed for all points
-        outlet_loss = torch.mean(dpdy_outlet**2) * 250
-    else:
-        outlet_loss = torch.tensor(0.0, device=inputs.device)
+    # Outlet pressure should be 0
+    outlet_loss = torch.mean(yhp[outlet_mask, 2]**2)
+    
     
     # Physics computation - use precomputed gradients, subset to interior
-    if interior_mask.sum() > 0:
-        # Subset everything to interior points
-        u_int = yhp[interior_mask, 0:1]
-        v_int = yhp[interior_mask, 1:2]
-        dudx_int = dudx[interior_mask]
-        dudy_int = dudy[interior_mask]
-        dvdx_int = dvdx[interior_mask]
-        dvdy_int = dvdy[interior_mask]
-        dpdx_int = dpdx[interior_mask]
-        dpdy_int = dpdy[interior_mask]
-        d2udx2_int = d2udx2[interior_mask]
-        d2udy2_int = d2udy2[interior_mask]
-        d2vdx2_int = d2vdx2[interior_mask]
-        d2vdy2_int = d2vdy2[interior_mask]
-        
-        # Navier-Stokes equations
-        navier_x = (rho * (u_int * dudx_int + v_int * dudy_int) + 
-                   dpdx_int - mu * (d2udx2_int + d2udy2_int))
-        navier_y = (rho * (u_int * dvdx_int + v_int * dvdy_int) + 
-                   dpdy_int - mu * (d2vdx2_int + d2vdy2_int))
-        continuity = dudx_int + dvdy_int
-        
-        loss_phys = (torch.mean(navier_x**2) + torch.mean(navier_y**2) + 
-                    torch.mean(continuity**2) * 1000)
+    # Subset everything to interior points
+    u_int = yhp[interior_mask, 0:1]
+    v_int = yhp[interior_mask, 1:2]
+    dudx_int = dudx[interior_mask]
+    dudy_int = dudy[interior_mask]
+    dvdx_int = dvdx[interior_mask]
+    dvdy_int = dvdy[interior_mask]
+    dpdx_int = dpdx[interior_mask]
+    dpdy_int = dpdy[interior_mask]
+    d2udx2_int = d2udx2[interior_mask]
+    d2udy2_int = d2udy2[interior_mask]
+    d2vdx2_int = d2vdx2[interior_mask]
+    d2vdy2_int = d2vdy2[interior_mask]
+    
+    # Navier-Stokes equations
+    navier_x = (rho * (u_int * dudx_int + v_int * dudy_int) + 
+                dpdx_int - mu * (d2udx2_int + d2udy2_int))
+    navier_y = (rho * (u_int * dvdx_int + v_int * dvdy_int) + 
+                dpdy_int - mu * (d2vdx2_int + d2vdy2_int))
+    continuity = dudx_int + dvdy_int
+
+    w_init = 1
+
+    if i < 50000:
+        w_init = 1
+    elif 75000 > i >= 50000:
+        w_init = w_init - (i - 50000)/25000
     else:
-        loss_phys = torch.tensor(0.0, device=inputs.device)
+        w_init = 0
     
-    total_loss = no_slip_loss + inlet_loss + outlet_loss + loss_phys
+    init_loss = (torch.mean((yhp[interior_mask, 0] - u_avg)**2) +
+                torch.mean((yhp[interior_mask, 1])**2)) * w_init * 10
     
-    return total_loss, loss_phys, no_slip_loss, inlet_loss, outlet_loss
+    loss_phys = (torch.mean(navier_x**2) + torch.mean(navier_y**2) + 
+                torch.mean(continuity**2) * 1000)
+    
+    total_loss = no_slip_loss + inlet_loss + outlet_loss + loss_phys + init_loss
+    
+    return total_loss, loss_phys, no_slip_loss, inlet_loss, outlet_loss, init_loss
 
 # Simulation parameters
 h = 0.01
@@ -189,20 +195,27 @@ torch.manual_seed(rng)
 # Model initialization
 poiseuille_model = Model(2, 3, 100, 12).to(device)
 optimizer_a = torch.optim.Adam(poiseuille_model.parameters(), lr=1e-4)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_a, "min", patience=1000)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer_a, step_size=75000, gamma=0.2)
 
 # Logging
-losses = {key: [] for key in ["tot", "phys", "no_slip", "inlet", "outlet"]}
+losses = {key: [] for key in ["tot", "phys", "no_slip", "inlet", "outlet", "init"]}
 
-total_points = 20000
+total_points = 25000
 
 full_tensor_np = generate_points(total_points)
 full_tensor = torch.from_numpy(full_tensor_np).float().to(device).requires_grad_()
 
 # Training loop
-for i in trange(50000):
+for i in trange(120000):
 
     optimizer_a.zero_grad()
+
+    if i % 20000 == 0:
+        full_tensor_np = generate_points(total_points)
+        full_tensor = torch.from_numpy(full_tensor_np).float().to(device).requires_grad_()
+
+    if i == 50000:
+        torch.save(poiseuille_model.state_dict(), "full_init_loss.pt")
 
     x_vals_tensor = full_tensor[:, 0]
     y_vals_tensor = full_tensor[:, 1]
@@ -213,11 +226,11 @@ for i in trange(50000):
     interior_mask = ~(no_slip_mask | inlet_mask | outlet_mask)
     masks = (no_slip_mask, inlet_mask, outlet_mask, interior_mask)
     
-    loss, loss_phys, no_slip_loss, inlet_loss, outlet_loss = compute_loss(poiseuille_model, full_tensor, masks, i)
+    loss, loss_phys, no_slip_loss, inlet_loss, outlet_loss, init_loss = compute_loss(poiseuille_model, full_tensor, masks, i)
 
     loss.backward()
     optimizer_a.step()
-    scheduler.step(loss)
+    scheduler.step()
 
 
     if i > 10000:
@@ -226,9 +239,10 @@ for i in trange(50000):
         losses["no_slip"].append(no_slip_loss.item())
         losses["inlet"].append(inlet_loss.item())
         losses["outlet"].append(outlet_loss.item())
+        losses["init"].append(init_loss.item())
 
-    if i % 5000 == 0 or i == 49999:        
-        tqdm.write(f"Step {i+1}, Loss: {loss.item():.6f}\n Physics: {loss_phys.item():.6f}   No slip: {no_slip_loss.item():.6f}   Inlet: {inlet_loss.item():.6f}   Outlet: {outlet_loss.item():.6f}")
+    if i % 5000 == 0 or i == 149999:        
+        tqdm.write(f"Step {i+1}, Loss: {loss.item():.6f}\n Physics: {loss_phys.item():.6f}   No slip: {no_slip_loss.item():.6f}   Inlet: {inlet_loss.item():.6f}   Outlet: {outlet_loss.item():.6f}   Init: {init_loss.item():.6f}")
 
 # Plotting losses
 epochs = range(10000, len(losses["tot"]) + 10000)

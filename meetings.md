@@ -41,3 +41,14 @@ plot losses on different graphs
 test methode scientifique -> faire un test avec raison précise et attente, pas que des tests au hasard
 changer pression fixée in et out BC
 changer architecture
+
+# Meeting 18.06
+Après discussion, nous sommes certainement dans un optimum local, du au fait qu'il est très simple pour le réseau de tout mettre a 0
+Plusieurs options pour se sortir de la:
+Batching ou simulations sur plusieurs séquences du domaine (vu dans un papier "failure modes") paper failure modes seqential training
+
+Loss d'initialisation, décroissante avec les epochs, pour soit demander un flow de base dans le domaine, soit commencer l'entrainement "sans les murs" (voir photo téléphone)
+
+starting conditions, loss ponderation, changing over time
+
+Aussi a régler: fixer pression a la sortie et ne pas contraindre a l'entrée
