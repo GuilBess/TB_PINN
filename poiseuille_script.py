@@ -54,6 +54,7 @@ class Model(nn.Module):
 
 # Point generation
 def generate_points(N):
+    # Zone helper for different densities on the domain (see example.ipynb for visualization)
     zones = [
         (0, 0.4, -0.02, 0.02, 0.01),
         (0, 0.4, 0.01, 0.02, 0.00),
