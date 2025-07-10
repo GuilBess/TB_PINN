@@ -43,7 +43,7 @@ pip install pandas
 ```
 
 # Running the code
-To run the script, just move the script file, run_slurm file and container.def file on the server and use the folowwing command to build the apptainer:
+To run the script, just move the poiseuille_script.py, run_slurm.sh and container.def files on the server and use the following command to build the apptainer:
 
 ```bash
 apptainer build mycontainer.sif container.def
