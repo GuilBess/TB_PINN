@@ -52,3 +52,41 @@ Loss d'initialisation, décroissante avec les epochs, pour soit demander un flow
 starting conditions, loss ponderation, changing over time
 
 Aussi a régler: fixer pression a la sortie et ne pas contraindre a l'entrée
+
+# Meeting 25.06
+Pas de grande amélioration, pression toujours "a l'envers". On voit souvent un "creux" au milieu de la simulation, est-ce qu'elle est "trop longue"?
+esssais effectués avec la méthode "séquentielle" non concluent
+
+ensuite:
+reverifier les eq de la physique
+tests avec un domaine plus restreint
+tests en "enlevant" les murs (pas de loss no slip au début puis augemntation progressive du poids)
+find better weighting
+
+test sans output pression
+regarder chez les autres PINN pour voir, notemment pression
+augmenter dimention entrée (papier)
+test loss de manière plus isolée
+
+# Meeting 02.07
+Tests losses séparées, problème sur physics ou interaction entre physics et BCs
+Peut-être pas faire grads sur tout le domaine? Gradient interferance???
+
+-(1/(rho*uavg²))
+
+initialisation pression 0
+
+# Meeting 04.07
+
+commencer avec init et physique, baisser l'init plus lentement et après plus longtemps
+
+init et inlet plus "smooth"?
+
+
+# Meeting 08.07
+
+réglage des poids -> retour a des poids équivalents partout
+example test 3 init forme de cos
+test4 50k -> on voit quelque chose qui ressemble a de la physique
+
+Mettre une partie des BC dans la loss physique!!!

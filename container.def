@@ -1,0 +1,19 @@
+Bootstrap: docker
+From: python:3.10-slim
+
+%files
+    poiseuille_script.py /opt/poiseuille_script.py
+
+%post
+    pip install numpy
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    pip install tqdm
+    pip install matplotlib
+    pip install random-fourier-features-pytorch
+
+%environment
+    export PATH=/usr/local/bin:$PATH
+    export PYTHONUNBUFFERED=1
+
+%runscript
+    exec python /opt/test_script_2.py "$@" 

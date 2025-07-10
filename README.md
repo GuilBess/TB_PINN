@@ -11,10 +11,33 @@ With that, we want to evaluate PINNs for fluid simulation in this domain.
 
 Finally, we want to try to simulate more complex situations, either with 3D simulations or by adding obstacles to previous simulations.
 
-## 2D Steady State
+## test_script.py
+This is a test script that helped me to familiarize with both PINNs and running scripts on chacha. 
+The aim was to be able to simulate the physics of a spring using a PINN. We can see the same thing in the example.ipynb note book, but this script was made in order to familiarize with the process of runing scripts using slurm.
 
-First step is to derive the PDEs from the Navier-Stokes equations
+## example.ipynb
+This is a notebook used to try different things during the project. If I wanted to see what kind of points I was generating, visualize zones in the domain, test functions,... I would do that in this notebook. 
 
-write the stuff hehehehhhehehe
+## poiseuille_script.py
+This is the training script for the poiseuille flow PINN, to be run on the computing server
 
-We also need to compare our simulation to what the physics says. From wikipedia 
+## display_results.ipynb
+This notebook is used to visualize results from the PINN, for the poiseuille flow.
+
+## run_slurm.sh
+bash script for slurm, used to launch the job on the computing server, using the GPU.
+
+## container.def
+The sysadmins asked of us to run ous tasks from a special type of conainer, known as apptainer. This file describes what script we want in the appainer and installs the dependencies.
+
+# Dependencies
+for this version of the code, please install the following libraries:
+
+```bash
+pip install numpy
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install tqdm
+pip install matplotlib
+pip install random-fourier-features-pytorch
+pip install pandas
+```

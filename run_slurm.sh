@@ -1,10 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=test_PINN # Job name
+#SBATCH --job-name=test_PINN    # create a short name for your job
+#SBATCH --nodes=1                # node count
+#SBATCH --ntasks=1               # total number of tasks across all nodes
+#SBATCH --cpus-per-task=1        # cpu-cores per task (>1 if multi-threaded tasks)
+#SBATCH --mem-per-cpu=2G         # memory per cpu-core (4G per cpu-core is default)
+#SBATCH --time=12:00:00          # total run time limit (HH:MM:SS)
+#SBATCH --gres=shard:24
 #SBATCH --output=output.txt # Standard output file
 #SBATCH --error=error.txt # Standard error file
-#SBATCH --tasks=1 # Number of tasks
-#SBATCH --gpus-per-node=1 # Require GPUs
-#SBATCH --time=0-01:00 # Maximum runtime (D-HH:MM)
-#SBATCH --partition=Chacha
+#module purge
 
-apptainer run --nv app_test.sif
+apptainer run --nv mycontainer.sif
