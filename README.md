@@ -41,3 +41,20 @@ pip install matplotlib
 pip install random-fourier-features-pytorch
 pip install pandas
 ```
+
+# Running the code
+To run the script, just move the script file, run_slurm file and container.def file on the server and use the folowwing command to build the apptainer:
+
+```bash
+apptainer build mycontainer.sif container.def
+```
+
+After the apptainer has been built, you can launch it with slurm:
+```bash
+sbatch run_slurm.sh
+```
+
+When the script is done running, you can either see the losses graphs or use the .pt files generated to see the results in the display_result.ipynb notebook
+
+# DISCLAIMER
+At this time and with this code, the results are not correct. The simulation is not conform the the theorical physical result.
